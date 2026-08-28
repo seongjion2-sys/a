@@ -19,21 +19,20 @@ def get_base64_image(image_path):
     return None
 
 
-# 변경하신 이미지 파일명 설정
+# 이미지 파일명 설정 (baby.png)
 IMAGE_PATH = "baby.png"
 img_base64 = get_base64_image(IMAGE_PATH)
 
-# 이미지 파일이 없을 경우 경고 메시지 표시
 if img_base64 is None:
     st.warning(
         f"⚠️ '{IMAGE_PATH}' 파일이 깃허브 메인 폴더(루트)에 없습니다. 파일명을 확인해 주세요."
     )
 
-# 전체 화면 배경 및 UI 커스텀 CSS
+# CSS 스타일 적용
 st.markdown(
     f"""
     <style>
-    /* 상단 헤더 및 기본 여백 제거 */
+    /* 여백 및 헤더 제거 */
     header {{
         visibility: hidden;
     }}
@@ -46,59 +45,73 @@ st.markdown(
         max-width: 100% !important;
     }}
     
-    /* 화면 전체에 baby.png 배경 설정 */
+    /* 화면 전체 영역 설정 (어두운 배경색으로 여백 처리) */
     .stApp {{
-        background: url('data:image/png;base64,{img_base64 if img_base64 else ""}') no-repeat center center fixed !important;
-        background-size: cover !important;
+        background-color: #1a1a1a !important;
+        background-image: url('data:image/png;base64,{img_base64 if img_base64 else ""}');
+        background-repeat: no-repeat !important;
+        background-position: center center !important;
+        /* contain 옵션을 사용해 이미지가 짤리지 않고 전체가 다 나오도록 설정 */
+        background-size: contain !important;
+    }}
+
+    /* 하단 UI 컨테이너 스타일 */
+    .bottom-ui {{
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 800px;
+        z-index: 999;
     }}
 
     /* 상태 표시줄 */
     .status-bar {{
-        background: rgba(30, 30, 30, 0.85);
+        background: rgba(0, 0, 0, 0.75);
         color: white;
         text-align: center;
-        padding: 8px 30px;
-        font-size: 16px;
+        padding: 8px 25px;
+        font-size: 15px;
         font-weight: 600;
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        margin-bottom: 15px;
+        margin: 0 auto 12px auto;
+        width: fit-content;
     }}
 
-    /* 하단 버튼 스타일 */
+    /* 버튼 스타일 */
     div.stButton > button {{
         width: 100%;
-        height: 65px;
-        border-radius: 14px !important;
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
-        background: rgba(255, 255, 255, 0.9) !important;
-        color: #222222 !important;
+        height: 60px;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(4px);
+        color: #111111 !important;
         font-weight: bold !important;
-        font-size: 15px !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+        font-size: 14px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
         transition: all 0.2s ease-in-out;
     }}
 
     div.stButton > button:hover {{
         background: rgba(255, 255, 255, 1.0) !important;
-        transform: translateY(-3px);
+        transform: translateY(-2px);
     }}
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# 하단 UI 위치 맞춤용 여백
-st.markdown('<div style="height: 70vh;"></div>', unsafe_allow_html=True)
+# 하단 버튼 레이아웃 구성
+st.markdown('<div class="bottom-ui">', unsafe_allow_html=True)
 
 # 1. 상태 표시줄 (나이, 기분)
 st.markdown(
     """
-    <div style="display: flex; justify-content: center;">
-        <div class="status-bar">
-            나이: 1세 &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 기분: 우는 중
-        </div>
+    <div class="status-bar">
+        나이: 1세 &nbsp;&nbsp;|&nbsp;&nbsp; 기분: 우는 중
     </div>
 """,
     unsafe_allow_html=True,
@@ -126,3 +139,5 @@ with col4:
 with col5:
     if st.button("⚙️\n옵션"):
         st.toast("옵션 메뉴 클릭!")
+
+st.markdown("</div>", unsafe_allow_html=True)
