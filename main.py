@@ -2,13 +2,16 @@ import base64
 import os
 import streamlit as st
 
-# 페이지 구성
+# 페이지 기본 설정 (와이드 레이아웃 사용)
 st.set_page_config(
-    page_title="아기 키우기 게임", page_icon="👶", layout="centered"
+    page_title="아기 키우기 게임",
+    page_icon="👶",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 
-# 이미지를 Base64로 변환하는 함수 (HTML/CSS 사용용)
+# 이미지를 Base64로 변환하는 함수
 def get_base64_image(image_path):
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
@@ -16,108 +19,113 @@ def get_base64_image(image_path):
     return ""
 
 
-# 이미지 파일 경로 (깃허브 리포지토리에 포함되어야 함)
-BG_IMAGE_PATH = "living_room.jpg"  # 거실 배경 이미지
-BABY_IMAGE_PATH = "baby.png"  # 울고 있는 아기 이미지 (배경 투명 PNG 권장)
+# 합성된 이미지 파일명 (깃허브 리포지토리에 이 파일명으로 저장해주세요)
+IMAGE_PATH = "combined_image.png"
+img_base64 = get_base64_image(IMAGE_PATH)
 
-bg_base64 = get_base64_image(BG_IMAGE_PATH)
-baby_base64 = get_base64_image(BABY_IMAGE_PATH)
-
-# 화면 스타일링 (Custom CSS)
+# 화면 전체를 채우는 CSS 및 UI 스타일링
 st.markdown(
     f"""
     <style>
-    /* 전체 배경 스타일 */
-    .stApp {{
-        background-color: #eef2f5;
+    /* Streamlit 기본 여백 제거 및 전체 화면 설정 */
+    #root > div:nth-child(1) > div > div > div {{
+        padding: 0px !important;
+    }}
+    .stAppHeader {{
+        display: none;
+    }}
+    .stMainBlockContainer {{
+        padding: 0px !important;
+        max-width: 100% !important;
     }}
     
-    /* 게임 메인 컨테이너 */
-    .game-container {{
-        position: relative;
-        width: 100%;
-        max-width: 900px;
-        height: 520px;
-        margin: 0 auto;
-        background-image: url('data:image/jpeg;base64,{bg_base64}');
+    /* 전체 화면 배경 이미지 */
+    .full-screen-bg {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-image: url('data:image/png;base64,{img_base64}');
         background-size: cover;
         background-position: center;
-        border-radius: 12px 12px 0 0;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
-        overflow: hidden;
+        background-repeat: no-repeat;
+        z-index: 0;
     }}
 
-    /* 테이블 위 아기 이미지 위치 */
-    .baby-image {{
-        position: absolute;
-        bottom: 80px;
+    /* 하단 오버레이 레이아웃 컨테이너 */
+    .bottom-ui-container {{
+        position: fixed;
+        bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        width: 180px;
+        width: 90%;
+        max-width: 800px;
         z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }}
 
-    /* 상태 표시줄 (나이, 기분) */
+    /* 상태 표시줄 */
     .status-bar {{
-        background-color: #2b2b2b;
+        background: rgba(30, 30, 30, 0.85);
+        backdrop-filter: blur(5px);
         color: white;
         text-align: center;
-        padding: 8px 20px;
-        font-size: 15px;
-        font-weight: 500;
+        padding: 8px 30px;
+        font-size: 16px;
+        font-weight: 600;
         border-radius: 20px;
-        width: 60%;
-        margin: -20px auto 15px auto;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        position: relative;
-        z-index: 20;
+        margin-bottom: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }}
 
-    /* Streamlit 버튼 스타일 커스텀 */
+    /* 버튼 스타일 Custom */
     div.stButton > button {{
         width: 100%;
-        height: 60px;
-        border-radius: 12px !important;
-        border: 1px solid #dcdcdc !important;
-        background-color: #ffffff !important;
-        color: #333333 !important;
+        height: 65px;
+        border-radius: 14px !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(8px) !important;
+        color: #222222 !important;
         font-weight: bold !important;
         font-size: 15px !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
         transition: all 0.2s ease-in-out;
     }}
 
     div.stButton > button:hover {{
-        background-color: #f0f4f8 !important;
-        border-color: #b0bec5 !important;
-        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 1.0) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.25) !important;
     }}
     </style>
+
+    <!-- 배경 이미지 래퍼 -->
+    <div class="full-screen-bg"></div>
 """,
     unsafe_allow_html=True,
 )
 
-# 1. 게임 메인 화면 (거실 배경 + 아기)
-st.markdown(
-    f"""
-    <div class="game-container">
-        {"<img src='data:image/png;base64," + baby_base64 + "' class='baby-image'>" if baby_base64 else ""}
-    </div>
-""",
-    unsafe_allow_html=True,
-)
+# 하단 UI 위치 구성을 위한 레이아웃
+st.markdown('<div style="height: 72vh;"></div>', unsafe_allow_html=True)
 
-# 2. 상태 표시줄
+# 1. 상태 표시줄 (나이, 기분)
 st.markdown(
     """
-    <div class="status-bar">
-        나이: 1세 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 기분: 우는 중
+    <div style="display: flex; justify-content: center;">
+        <div class="status-bar">
+            나이: 1세 &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 기분: 우는 중
+        </div>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# 3. 하단 메뉴 버튼 (5개 컬럼)
+# 2. 하단 메뉴 버튼 5개
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
